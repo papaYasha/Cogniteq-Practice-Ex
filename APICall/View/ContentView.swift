@@ -7,34 +7,8 @@
 
 import SwiftUI
 
-class ViewModel: ObservableObject {
-    @Published var users: [Users] = []
-    
-    func fetch() {
-        guard let url = URL(string: "https://jsonplaceholder.typicode.com/users") else {
-            return
-        }
-        let task = URLSession.shared.dataTask(with: url) { [weak self] data, _, error in
-            guard let data = data, error == nil else {
-                return
-            }
-            
-            do {
-                let users = try JSONDecoder().decode([Users].self, from: data)
-                DispatchQueue.main.async {
-                    self?.users = users
-                }
-            }
-            catch {
-                print(String(describing: error))
-            }
-        }
-        task.resume()
-    }
-}
-
 struct ContentView: View {
-    @StateObject var viewModel = ViewModel()
+    @StateObject private var viewModel = UserViewModel()
     
     var body: some View {
         NavigationView {
@@ -59,10 +33,17 @@ struct ContentView: View {
                     }
                     .padding(10)
                 }
+                NavigationLink(
+                    destination: PostsContentView(),
+                    label: {
+                        Text("Posts ⏭")
+                            .foregroundColor(Color.blue)
+                            .font(Font.custom("Helvetica", size: 24))
+                    })
             }
             .navigationTitle("Users")
             .onAppear {
-                viewModel.fetch()
+                viewModel.fetchUserInfo()
             }
         }
     }
